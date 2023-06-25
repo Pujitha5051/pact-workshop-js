@@ -10,12 +10,26 @@ class ProductRepository {
         ]);
     }
 
+    async getNextId() {
+        // find the next available id
+        let id = 1;
+        while (this.products.has(id.toString())) {
+            id++;
+        }
+        return id.toString();
+    }
+
     async fetchAll() {
         return [...this.products.values()]
     }
 
     async getById(id) {
         return this.products.get(id);
+    }
+
+    async save(product) {
+        this.products.set(product.id, product);
+        return product;
     }
 }
 

@@ -5,7 +5,7 @@ import {
   SpecificationVersion,
 } from "@pact-foundation/pact";
 import { API } from "./api";
-const { eachLike, like } = MatchersV3;
+const { like } = MatchersV3;
 
 const provider = new PactV3({
   consumer: "FrontendWebsite",
@@ -17,12 +17,14 @@ const provider = new PactV3({
 });
 
 describe("API Pact test", () => {
-  describe("getting all products", () => {
-    test("products exists", async () => {
+  describe("Testing for get all products", () => {
+    test("Test Case 1: products exists", async () => {
       // set up Pact interactions
-      await provider.addInteraction({
-        states: [{ description: "products exist" }],
-        uponReceiving: "get all products",
+      provider.addInteraction({
+        states: [{
+          description: "products exist"
+        }],
+        uponReceiving: "a request to get all products with data",
         withRequest: {
           method: "GET",
           path: "/products",
@@ -35,11 +37,22 @@ describe("API Pact test", () => {
           headers: {
             "Content-Type": "application/json; charset=utf-8",
           },
-          body: eachLike({
+          body: [{
             id: "09",
             type: "CREDIT_CARD",
             name: "Gem Visa",
-          }),
+          },
+          {
+            id: "10",
+            type: "CREDIT_CARD",
+            name: "28 Degrees",
+          },
+          {
+            id: "11",
+            type: "PERSONAL_LOAN",
+            name: "MyFlexiPay",
+          },
+        ],
         },
       });
 
@@ -48,18 +61,23 @@ describe("API Pact test", () => {
 
         // make request to Pact mock server
         const product = await api.getAllProducts();
+        console.log('Pact mock url: ' + mockService.url);
 
         expect(product).toStrictEqual([
           { id: "09", name: "Gem Visa", type: "CREDIT_CARD" },
+          { id: "10", name: "28 Degrees", type: "CREDIT_CARD" },
+          { id: "11", name: "MyFlexiPay", type: "PERSONAL_LOAN" },
         ]);
       });
     });
 
-    test("no products exists", async () => {
+    test("Test Case 2: no products exists", async () => {
       // set up Pact interactions
-      await provider.addInteraction({
-        states: [{ description: "no products exist" }],
-        uponReceiving: "get all products",
+      provider.addInteraction({
+        states: [{ 
+          description: "no products exist"
+        }],
+        uponReceiving: "a request to get all products without data",
         withRequest: {
           method: "GET",
           path: "/products",
@@ -86,11 +104,13 @@ describe("API Pact test", () => {
       });
     });
 
-    test("no auth token", async () => {
+    test("Test case 3: get all products without auth token", async () => {
       // set up Pact interactions
-      await provider.addInteraction({
-        states: [{ description: "products exist" }],
-        uponReceiving: "get all products",
+      provider.addInteraction({
+        states: [{ 
+          description: "products exist"
+        }],
+        uponReceiving: "a request to get all products without auth token",
         withRequest: {
           method: "GET",
           path: "/products",
@@ -111,12 +131,14 @@ describe("API Pact test", () => {
     });    
   });
 
-  describe("getting one product", () => {
-    test("ID 10 exists", async () => {
+  describe("Testing for product data based on ID", () => {
+    test("Test Case 4: If ID 10 exists", async () => {
       // set up Pact interactions
-      await provider.addInteraction({
-        states: [{ description: "product with ID 10 exists" }],
-        uponReceiving: "get product with ID 10",
+      provider.addInteraction({
+        states: [{
+          description: "products exist"
+        }],
+        uponReceiving: "a request to get product with ID 10",
         withRequest: {
           method: "GET",
           path: "/product/10",
@@ -151,14 +173,16 @@ describe("API Pact test", () => {
       });
     });
 
-    test("product does not exist", async () => {
+    test("Test Case 5: If product does not exist", async () => {
       // set up Pact interactions
-      await provider.addInteraction({
-        states: [{ description: "product with ID 11 does not exist" }],
-        uponReceiving: "get product with ID 11",
+      provider.addInteraction({
+        states: [{ 
+          description: "no products exist"
+        }],
+        uponReceiving: "a request to get product with ID 10",
         withRequest: {
           method: "GET",
-          path: "/product/11",
+          path: "/product/10",
           headers: {
             Authorization: like("Bearer 2019-01-14T11:34:18.045Z"),
           },
@@ -172,17 +196,19 @@ describe("API Pact test", () => {
         const api = new API(mockService.url);
 
         // make request to Pact mock server
-        await expect(api.getProduct("11")).rejects.toThrow(
+        await expect(api.getProduct("10")).rejects.toThrow(
           "Request failed with status code 404"
         );
       });
     });
 
-    test("no auth token", async () => {
+    test("Tase Case 6: To get produt without auth token", async () => {
       // set up Pact interactions
-      await provider.addInteraction({
-        states: [{ description: "product with ID 10 exists" }],
-        uponReceiving: "get product by ID 10 with no auth token",
+      provider.addInteraction({
+        states: [{
+          description: "products exist"
+        }],
+        uponReceiving: "a request to get product with ID 10 without auth token",
         withRequest: {
           method: "GET",
           path: "/product/10",
@@ -199,6 +225,51 @@ describe("API Pact test", () => {
         await expect(api.getProduct("10")).rejects.toThrow(
           "Request failed with status code 401"
         );
+      });
+    });
+  });
+
+  describe("Testing for post products", () => {
+    test("create product", async () => {
+      // set up Pact interactions
+      provider.addInteraction({
+        states: [{
+          description: "products exist"
+        }],
+        uponReceiving: "a request to create a product",
+        withRequest: {
+          method: "POST",
+          path: "/products",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: like("Bearer 2019-01-14T11:34:18.045Z"),
+          },
+          body: {
+            type: "CREDIT_CARD",
+            name: "28 Degrees",
+          },
+        },
+        willRespondWith: {
+          status: 201,
+          headers: {
+            "Content-Type": "application/json; charset=utf-8",
+          },
+          body: {
+            success: true,
+          },
+        }
+      });
+
+      await provider.executeTest(async (mockService) => {
+        const api = new API(mockService.url);
+
+        // make request to Pact mock server
+        const response = await api.createProduct({
+          type: "CREDIT_CARD",
+          name: "28 Degrees",
+        });
+        console.log(response);
+        expect(response).toStrictEqual({ success: true });
       });
     });
   });

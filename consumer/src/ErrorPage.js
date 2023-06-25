@@ -38,3 +38,6 @@ ErrorPage.propTypes = {
 };
 
 export default withRouter(ErrorPage);
+
+
+// not required
