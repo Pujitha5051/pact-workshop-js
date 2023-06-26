@@ -1,3 +1,5 @@
+// Database
+
 const Product = require('./product');
 
 class ProductRepository {
