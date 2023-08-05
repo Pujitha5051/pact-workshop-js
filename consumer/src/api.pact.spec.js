@@ -7,7 +7,7 @@ import {
 import { API } from "./api";
 const { like } = MatchersV3;
 
-const provider = new PactV3({
+const mockProvider = new PactV3({
   consumer: "FrontendWebsite",
   provider: "ProductService",
   log: path.resolve(process.cwd(), "logs", "pact.log"),
@@ -20,11 +20,11 @@ describe("API Pact test", () => {
   describe("Testing for get all products", () => {
     test("Test Case 1: products exists", async () => {
       // set up Pact interactions
-      provider.addInteraction({
+      mockProvider.addInteraction({
         states: [{
           description: "products exist"
         }],
-        uponReceiving: "a request to get all products with data",
+        uponReceiving: "a request to get all products",
         withRequest: {
           method: "GET",
           path: "/products",
@@ -52,11 +52,11 @@ describe("API Pact test", () => {
             type: "PERSONAL_LOAN",
             name: "MyFlexiPay",
           },
-        ],
+          ],
         },
       });
 
-      await provider.executeTest(async (mockService) => {
+      await mockProvider.executeTest(async (mockService) => {
         const api = new API(mockService.url);
 
         // make request to Pact mock server
@@ -73,8 +73,8 @@ describe("API Pact test", () => {
 
     test("Test Case 2: no products exists", async () => {
       // set up Pact interactions
-      provider.addInteraction({
-        states: [{ 
+      mockProvider.addInteraction({
+        states: [{
           description: "no products exist"
         }],
         uponReceiving: "a request to get all products without data",
@@ -94,7 +94,7 @@ describe("API Pact test", () => {
         },
       });
 
-      await provider.executeTest(async (mockService) => {
+      await mockProvider.executeTest(async (mockService) => {
         const api = new API(mockService.url);
 
         // make request to Pact mock server
@@ -106,8 +106,8 @@ describe("API Pact test", () => {
 
     test("Test case 3: get all products without auth token", async () => {
       // set up Pact interactions
-      provider.addInteraction({
-        states: [{ 
+      mockProvider.addInteraction({
+        states: [{
           description: "products exist"
         }],
         uponReceiving: "a request to get all products without auth token",
@@ -120,7 +120,7 @@ describe("API Pact test", () => {
         },
       });
 
-      await provider.executeTest(async (mockService) => {
+      await mockProvider.executeTest(async (mockService) => {
         const api = new API(mockService.url);
 
         // make request to Pact mock server
@@ -128,20 +128,20 @@ describe("API Pact test", () => {
           "Request failed with status code 401"
         );
       });
-    });    
+    });
   });
 
   describe("Testing for product data based on ID", () => {
-    test("Test Case 4: If ID 10 exists", async () => {
+    test("Test Case 4: If ID 13 exists", async () => {
       // set up Pact interactions
-      provider.addInteraction({
+      mockProvider.addInteraction({
         states: [{
-          description: "products exist"
+          description: "products exist with ID"
         }],
-        uponReceiving: "a request to get product with ID 10",
+        uponReceiving: "a request to get product with ID 13",
         withRequest: {
           method: "GET",
-          path: "/product/10",
+          path: "/product/13",
           headers: {
             Authorization: like("Bearer 2019-01-14T11:34:18.045Z"),
           },
@@ -152,21 +152,21 @@ describe("API Pact test", () => {
             "Content-Type": "application/json; charset=utf-8",
           },
           body: like({
-            id: "10",
+            id: "13",
             type: "CREDIT_CARD",
             name: "28 Degrees",
           }),
         },
       });
 
-      await provider.executeTest(async (mockService) => {
+      await mockProvider.executeTest(async (mockService) => {
         const api = new API(mockService.url);
 
         // make request to Pact mock server
-        const product = await api.getProduct("10");
+        const product = await api.getProduct("13");
 
         expect(product).toStrictEqual({
-          id: "10",
+          id: "13",
           type: "CREDIT_CARD",
           name: "28 Degrees",
         });
@@ -175,8 +175,8 @@ describe("API Pact test", () => {
 
     test("Test Case 5: If product does not exist", async () => {
       // set up Pact interactions
-      provider.addInteraction({
-        states: [{ 
+      mockProvider.addInteraction({
+        states: [{
           description: "no products exist"
         }],
         uponReceiving: "a request to get product with ID 10",
@@ -192,7 +192,7 @@ describe("API Pact test", () => {
         },
       });
 
-      await provider.executeTest(async (mockService) => {
+      await mockProvider.executeTest(async (mockService) => {
         const api = new API(mockService.url);
 
         // make request to Pact mock server
@@ -204,7 +204,7 @@ describe("API Pact test", () => {
 
     test("Tase Case 6: To get produt without auth token", async () => {
       // set up Pact interactions
-      provider.addInteraction({
+      mockProvider.addInteraction({
         states: [{
           description: "products exist"
         }],
@@ -218,7 +218,7 @@ describe("API Pact test", () => {
         },
       });
 
-      await provider.executeTest(async (mockService) => {
+      await mockProvider.executeTest(async (mockService) => {
         const api = new API(mockService.url);
 
         // make request to Pact mock server
@@ -232,7 +232,7 @@ describe("API Pact test", () => {
   describe("Testing for post products", () => {
     test("create product", async () => {
       // set up Pact interactions
-      provider.addInteraction({
+      mockProvider.addInteraction({
         states: [{
           description: "products exist"
         }],
@@ -260,7 +260,7 @@ describe("API Pact test", () => {
         }
       });
 
-      await provider.executeTest(async (mockService) => {
+      await mockProvider.executeTest(async (mockService) => {
         const api = new API(mockService.url);
 
         // make request to Pact mock server
